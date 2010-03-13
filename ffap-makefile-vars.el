@@ -3,7 +3,7 @@
 ;; Copyright 2009, 2010 Kevin Ryde
 
 ;; Author: Kevin Ryde <user42@zip.com.au>
-;; Version: 3
+;; Version: 4
 ;; Keywords: files
 ;; URL: http://user42.tuxfamily.org/ffap-makefile-vars/index.html
 ;; EmacsWiki: FindFileAtPoint
@@ -53,22 +53,26 @@
 ;; Version 1 - the first version
 ;; Version 2 - cooperate better with other advice on ffap-string-at-point
 ;; Version 3 - undo defadvice on unload-feature
+;; Version 4 - express dependency on 'advice
 
 ;;; Code:
 
 ;;;###autoload (eval-after-load "ffap" '(require 'ffap-makefile-vars))
 
+;; for `ad-find-advice' macro when running uncompiled
+;; (don't unload 'advice before our -unload-function)
+(require 'advice)
+
 
 ;;----------------------------------------------------------------------------
 ;; xemacs21 lacking
 
-;; no `eval-when-compile' on this fboundp because in xemacs 21.4.22
-;; easy-mmode.el (which is define-minor-mode etc) rudely defines a
-;; replace-regexp-in-string, so a compile-time test is unreliable
-;;
 ;; [same in man-completion.el]
 ;;
 (eval-and-compile ;; quieten emacs byte compiler
+  ;; no `eval-when-compile' on this fboundp because in xemacs 21.4.22
+  ;; easy-mmode.el (which is define-minor-mode etc) rudely defines a
+  ;; replace-regexp-in-string, so a compile-time test is unreliable
   (if (fboundp 'replace-regexp-in-string)
       ;; emacs (21 up)
       (defalias 'ffap-makefile-vars--replace-regexp-in-string
