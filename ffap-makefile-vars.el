@@ -1,10 +1,10 @@
 ;;; ffap-makefile-vars.el --- find file with makefile variables expanded
 
-;; Copyright 2009, 2010 Kevin Ryde
+;; Copyright 2009, 2010, 2015 Kevin Ryde
 
-;; Author: Kevin Ryde <user42@zip.com.au>
-;; Version: 4
-;; Keywords: files
+;; Author: Kevin Ryde <user42_kevin@yahoo.com.au>
+;; Version: 5
+;; Keywords: files, ffap, make
 ;; URL: http://user42.tuxfamily.org/ffap-makefile-vars/index.html
 ;; EmacsWiki: FindFileAtPoint
 
@@ -54,18 +54,20 @@
 ;; Version 2 - cooperate better with other advice on ffap-string-at-point
 ;; Version 3 - undo defadvice on unload-feature
 ;; Version 4 - express dependency on 'advice
+;; Version 5 - new email
 
 ;;; Code:
 
 ;;;###autoload (eval-after-load "ffap" '(require 'ffap-makefile-vars))
 
-;; for `ad-find-advice' macro when running uncompiled
-;; (don't unload 'advice before our -unload-function)
+;; Explicit dependency on advice.el since
+;; `ffap-makefile-vars-unload-function' needs `ad-find-advice' macro when
+;; running not byte compiled, and that macro is not autoloaded.
 (require 'advice)
 
 
 ;;----------------------------------------------------------------------------
-;; xemacs21 lacking
+;; `replace-regexp-in-string' compatibility
 
 ;; [same in man-completion.el]
 ;;
@@ -122,7 +124,7 @@ Variable definitions are sought in the current buffer or in
 `process-environment' and definitions are expanded recursively.
 
 Variable definitions in the buffer are preferred over environment
-values, if both exist.  The \"make -e\" option reverses that, but
+values if both exist.  The \"make -e\" option reverses that, but
 there's no equivalent here yet.
 
 Values from the environment are treated the same as from the
@@ -211,10 +213,15 @@ style environment variables."
                   (ffap-makefile-vars-substitute ad-return-value)))))
 
 (defun ffap-makefile-vars-unload-function ()
+  "Remove defadvice from function `ffap-string-at-point'.
+This is called by `unload-feature'."
   (when (ad-find-advice 'ffap-string-at-point 'around 'ffap-makefile-vars)
     (ad-remove-advice   'ffap-string-at-point 'around 'ffap-makefile-vars)
     (ad-activate        'ffap-string-at-point))
   nil) ;; and do normal unload-feature actions too
+
+;; LocalWords: makefile makefiles usr filenames xyz Backslashed unexpanded
+;; LocalWords: foo vars
 
 (provide 'ffap-makefile-vars)
 
