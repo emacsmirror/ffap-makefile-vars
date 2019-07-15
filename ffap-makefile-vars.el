@@ -1,9 +1,9 @@
 ;;; ffap-makefile-vars.el --- find file with makefile variables expanded
 
-;; Copyright 2009, 2010, 2015 Kevin Ryde
+;; Copyright 2009, 2010, 2015, 2016, 2019 Kevin Ryde
 
 ;; Author: Kevin Ryde <user42_kevin@yahoo.com.au>
-;; Version: 5
+;; Version: 6
 ;; Keywords: files, ffap, make
 ;; URL: http://user42.tuxfamily.org/ffap-makefile-vars/index.html
 ;; EmacsWiki: FindFileAtPoint
@@ -55,6 +55,7 @@
 ;; Version 3 - undo defadvice on unload-feature
 ;; Version 4 - express dependency on 'advice
 ;; Version 5 - new email
+;; Version 6 - use push for local variables
 
 ;;; Code:
 
@@ -64,6 +65,10 @@
 ;; `ffap-makefile-vars-unload-function' needs `ad-find-advice' macro when
 ;; running not byte compiled, and that macro is not autoloaded.
 (require 'advice)
+
+(eval-when-compile
+  (unless (fboundp 'push)
+    (require 'cl))) ;; for macros in emacs20
 
 
 ;;----------------------------------------------------------------------------
@@ -147,7 +152,7 @@ style environment variables."
   (let ((case-fold-search nil)
         (in-progress (list (cons nil str)))
         var-value
-        circular
+        seen
         name elem)
     (while str
       (let ((start 0))
@@ -157,9 +162,9 @@ style environment variables."
 \\(\\$(\\([A-Za-z_][A-Za-z_0-9]*\\))\\)" str start)
           (setq name (match-string 2 str))
           (if (assoc name in-progress)
-              (add-to-list 'circular name))
+              (push name seen))
 
-          (if (member name circular)
+          (if (member name seen)
               ;; circular definition, skip
               (setq start (match-end 1))
 
